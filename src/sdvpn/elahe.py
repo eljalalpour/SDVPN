@@ -17,13 +17,18 @@ from ryu.ofproto import ofproto_v1_3
 from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
+from pe import PE
 
 
 class ELTest(app_manager.RyuApp):
+    """
+    :type pes: dict[int, PE]
+    """
 
     def __init__(self, *args, **kwargs):
         super(ELTest, self).__init__(*args, **kwargs)
-        self.mac_table = {}
+        self.mac_to_pe = {}
+        self.pes = {}
 
     @set_ev_cls(dpset.EventDP, dpset.DPSET_EV_DISPATCHER)
     def handler_datapath(self, ev):
@@ -38,6 +43,7 @@ class ELTest(app_manager.RyuApp):
         # truncated packet data. In that case, we cannot output packets
         # correctly.  The bug has been fixed in OVS v2.1.0.
         if ev.enter:
+            self.pes[ev.dp.id] = PE(ev.dp)
             match = parser.OFPMatch()
             actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
             self.add_flow(ev.dp, 0, match, actions)
@@ -49,16 +55,31 @@ class ELTest(app_manager.RyuApp):
         datapath = msg.datapath
         pkt = packet.Packet(data)
         eth = pkt.get_protocols(ethernet.ethernet)[0]
+        eth_src = eth.src
+        eth_dst = eth.dst
 
         in_port = msg.match['in_port']
-        dpid = datapath.id
-        self.mac_table.setdefault(dpid, {})
-        (self.mac_table[dpid])[in_port] = eth.src
+        dpid_src = datapath.id
+        self.mac_to_pe[eth_src] = dpid_src
+        self.pes[dpid_src].add_mac(eth_src, in_port)
 
+        dpid_dst = self.mac_to_pe.get(eth_dst, 0)
+        if dpid_dst != 0:
+            out_port = self.pes[dpid_dst].get_mac(eth.dst)
+        else:
+            out_port = None
 
-        print(self.mac_table)
+        actions = [self.pes[dpid_dst].datapath.ofproto_parser.OFPActionOutput(out_port)]
+        data = None
+        if msg.buffer_id == self.pes[dpid_dst].datapath.ofproto.OFP_NO_BUFFER:
+            data = msg.data
 
-    def add_flow(self, datapath, priority, match, actions):
+        out = self.pes[dpid_dst].datapath.ofproto_parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
+                                                                      in_port=in_port, actions=actions, data=data)
+        datapath.send_msg(out)
+
+    @staticmethod
+    def add_flow(datapath, priority, match, actions):
         ofproto = datapath.ofproto
         # an object represents the openflow protocol
         parser = datapath.ofproto_parser
