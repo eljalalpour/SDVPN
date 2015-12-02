@@ -1,4 +1,4 @@
-package me.elahe.elonos;
+package me.elahe.sdvpn;
 
 import org.onosproject.core.ApplicationId;
 import org.onosproject.net.ConnectPoint;

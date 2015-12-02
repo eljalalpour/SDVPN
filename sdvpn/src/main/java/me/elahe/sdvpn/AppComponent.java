@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.elahe.elonos;
+package me.elahe.sdvpn;
 
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
@@ -22,19 +22,14 @@ import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.ReferenceCardinality;
 import org.onosproject.app.ApplicationService;
 import org.onosproject.core.ApplicationId;
-import org.onosproject.core.CoreService;
-import org.onosproject.core.DefaultApplicationId;
-import org.onosproject.net.ConnectPoint;
 import org.onosproject.net.host.HostService;
 import org.onosproject.net.intent.IntentService;
-import org.onosproject.net.intent.PointToPointIntent;
 import org.onosproject.sdnip.IntentSynchronizer;
-import org.onosproject.ui.table.cell.AppIdFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Skeletal ONOS application component.
+ * SDVPN application component.
  */
 @Component(immediate = true)
 public class AppComponent {
@@ -52,7 +47,7 @@ public class AppComponent {
 
 	@Activate
 	protected void activate() {
-		ApplicationId appId = applicationService.getId("me.elahe.elonos");
+		ApplicationId appId = applicationService.getId("me.elahe.sdvpn");
 
 		IntentSynchronizer intentSynchronizer = new IntentSynchronizer(appId, intentService);
 		intentSynchronizer.start();
