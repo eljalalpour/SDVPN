@@ -15,16 +15,11 @@
  */
 package me.elahe.sdvpn;
 
-import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.*;
 import org.onosproject.app.ApplicationService;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.net.host.HostService;
 import org.onosproject.net.intent.IntentService;
-import org.onosproject.sdnip.IntentSynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,12 +44,7 @@ public class AppComponent {
 	protected void activate() {
 		ApplicationId appId = applicationService.getId("me.elahe.sdvpn");
 
-		IntentSynchronizer intentSynchronizer = new IntentSynchronizer(appId, intentService);
-		intentSynchronizer.start();
-
-		hostService.addListener(new HostHandler(intentSynchronizer, appId));
-
-		applicationService.registerDeactivateHook(appId, intentSynchronizer::stop);
+		hostService.addListener(new HostHandler(intentService, appId, hostService));
 
 		log.info("Started");
 	}

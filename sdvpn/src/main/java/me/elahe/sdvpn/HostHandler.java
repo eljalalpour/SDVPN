@@ -1,65 +1,79 @@
 package me.elahe.sdvpn;
 
 import org.onosproject.core.ApplicationId;
-import org.onosproject.net.ConnectPoint;
 import org.onosproject.net.Host;
+import org.onosproject.net.flow.DefaultTrafficSelector;
+import org.onosproject.net.flow.DefaultTrafficTreatment;
+import org.onosproject.net.flow.TrafficSelector;
+import org.onosproject.net.flow.TrafficTreatment;
 import org.onosproject.net.host.HostEvent;
 import org.onosproject.net.host.HostListener;
-import org.onosproject.net.intent.PointToPointIntent;
-import org.onosproject.sdnip.IntentSynchronizer;
+import org.onosproject.net.host.HostService;
+import org.onosproject.net.intent.HostToHostIntent;
+import org.onosproject.net.intent.IntentService;
+import org.onosproject.net.intent.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Objects;
 
 public class HostHandler implements HostListener {
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	private IntentSynchronizer intentSynchronizer;
+	private IntentService intentService;
+	private HostService hostService;
 	private ApplicationId appId;
 
-	private ArrayList<Host> hosts = new ArrayList<>();
+	private static final int PRIORITY_OFFSET = 1000;
 
-	public HostHandler(IntentSynchronizer intentSynchronizer, ApplicationId appId) {
-		this.intentSynchronizer = intentSynchronizer;
+
+	public HostHandler(IntentService intentService, ApplicationId appId, HostService hostService) {
+		this.intentService = intentService;
 		this.appId = appId;
+		this.hostService = hostService;
 	}
 
 	@Override
 	public void event(HostEvent ev) {
 		if (ev.type() == HostEvent.Type.HOST_ADDED) {
-			log.info(ev.subject().toString());
-			hosts.stream().filter(host -> !Objects.equals(host.id().toString(), ev.subject().id().toString())).forEach(host -> {
-				PointToPointIntent p1 = PointToPointIntent.builder()
-					.egressPoint(ConnectPoint.hostConnectPoint(
-						host.id().toString() + "/" +
-							host.location().port().toString()
-					))
-					.ingressPoint(ConnectPoint.hostConnectPoint(
-						ev.subject().id().toString() + "/" +
-							ev.subject().location().port().toString()
-					))
-					.appId(appId)
-					.build();
-				PointToPointIntent p2 = PointToPointIntent.builder()
-					.ingressPoint(ConnectPoint.hostConnectPoint(
-						host.id().toString() + "/" +
-							host.location().port().toString()
-					))
-					.egressPoint(ConnectPoint.hostConnectPoint(
-						ev.subject().id().toString() + "/" +
-							ev.subject().location().port().toString()
-					))
-					.appId(appId)
-					.build();
-				intentSynchronizer.submit(p1);
-				intentSynchronizer.submit(p2);
-			});
-			if (!hosts.contains(ev.subject())) {
-				hosts.add(ev.subject());
+
+			for (Host host : hostService.getHosts()) {
+				if (host.id().equals(ev.subject().id()))
+					continue;
+
+				log.info("************************");
+				log.info(host.toString());
+				log.info(ev.subject().toString());
+				log.info("************************");
+
+				HostToHostIntent h = tunnelBuilder(host, ev.subject());
+
+				intentService.submit(h);
 			}
 		}
+	}
+
+	private HostToHostIntent tunnelBuilder(Host src, Host dst) {
+		String keyString = "uni-" +
+			src.id() +
+			"-->" +
+			dst.id();
+		Key key = Key.of(keyString, appId);
+
+		TrafficSelector selector = DefaultTrafficSelector.builder()
+			.matchEthSrc(src.mac())
+			.matchEthDst(dst.mac())
+			.build();
+
+		TrafficTreatment treatment = DefaultTrafficTreatment.emptyTreatment();
+
+		return HostToHostIntent.builder()
+			.one(src.id())
+			.two(dst.id())
+			.priority(PRIORITY_OFFSET)
+			.selector(selector)
+			.treatment(treatment)
+			.appId(appId)
+			.key(key)
+			.build();
 	}
 
 }
