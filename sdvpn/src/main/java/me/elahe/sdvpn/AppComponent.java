@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 @Component(immediate = true)
 public class AppComponent {
-
+	
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
@@ -43,9 +43,8 @@ public class AppComponent {
 	@Activate
 	protected void activate() {
 		ApplicationId appId = applicationService.getId("me.elahe.sdvpn");
-
 		hostService.addListener(new HostHandler(intentService, appId, hostService));
-
+		
 		log.info("Started");
 	}
 
@@ -53,5 +52,4 @@ public class AppComponent {
 	protected void deactivate() {
 		log.info("Stopped");
 	}
-
 }
