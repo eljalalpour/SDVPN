@@ -16,10 +16,16 @@
 package me.elahe.sdvpn;
 
 import org.apache.felix.scr.annotations.*;
+import org.onlab.packet.Ethernet;
 import org.onosproject.app.ApplicationService;
 import org.onosproject.core.ApplicationId;
+import org.onosproject.net.flow.DefaultTrafficSelector;
+import org.onosproject.net.flow.TrafficSelector;
 import org.onosproject.net.host.HostService;
 import org.onosproject.net.intent.IntentService;
+import org.onosproject.net.packet.PacketPriority;
+import org.onosproject.net.packet.PacketProcessor;
+import org.onosproject.net.packet.PacketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +45,20 @@ public class AppComponent {
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
 	protected ApplicationService applicationService;
+	
+	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+	protected PacketService packetService;
 
 	@Activate
 	protected void activate() {
 		ApplicationId appId = applicationService.getId("me.elahe.sdvpn");
-		hostService.addListener(new HostHandler(intentService, appId, hostService));
+		HostHandler handler = new HostHandler(intentService, appId, hostService, packetService);
+		hostService.addListener(handler);`
+		packetService.addProcessor(handler, PacketProcessor.director(2));
+		
+		TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
+		selector.matchEthType(Ethernet.TYPE_IPV4);
+		packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId);
 		
 		log.info("Started");
 	}

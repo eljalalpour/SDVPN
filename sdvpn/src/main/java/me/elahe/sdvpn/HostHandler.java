@@ -1,12 +1,8 @@
 package me.elahe.sdvpn;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.onlab.packet.Ethernet;
 import org.onlab.packet.MacAddress;
 import org.onosproject.core.ApplicationId;
-import org.onosproject.net.ConnectPoint;
 import org.onosproject.net.Host;
 import org.onosproject.net.HostId;
 import org.onosproject.net.PortNumber;
@@ -20,24 +16,27 @@ import org.onosproject.net.host.HostService;
 import org.onosproject.net.intent.HostToHostIntent;
 import org.onosproject.net.intent.IntentService;
 import org.onosproject.net.intent.Key;
-import org.onosproject.net.intent.SinglePointToMultiPointIntent;
+import org.onosproject.net.packet.DefaultOutboundPacket;
 import org.onosproject.net.packet.InboundPacket;
+import org.onosproject.net.packet.OutboundPacket;
 import org.onosproject.net.packet.PacketContext;
 import org.onosproject.net.packet.PacketProcessor;
+import org.onosproject.net.packet.PacketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HostHandler implements HostListener, PacketProcessor {
 	private final Logger log = LoggerFactory.getLogger(getClass());
-
 	private IntentService intentService;
 	private HostService hostService;
 	private ApplicationId appId;
+	private PacketService packetService;
 
-	public HostHandler(IntentService intentService, ApplicationId appId, HostService hostService) {
+	public HostHandler(IntentService intentService, ApplicationId appId, HostService hostService, PacketService packetService) {
 		this.intentService = intentService;
 		this.appId = appId;
 		this.hostService = hostService;
+		this.packetService = packetService;
 	}
 
 	@Override
@@ -49,11 +48,16 @@ public class HostHandler implements HostListener, PacketProcessor {
 		}
 		InboundPacket pkt = context.inPacket();
 		Ethernet ethPkt = pkt.parsed();
-
+		
 		if (ethPkt == null) {
 			return;
 		}
 
+		if (ethPkt.getDestinationMAC().equals(MacAddress.BROADCAST)) {
+			flood(context);
+			return;
+		}
+		
 		HostId dstId = HostId.hostId(ethPkt.getDestinationMAC());
 
 		// Do we know who this is for? If not, flood and bail.
@@ -62,6 +66,17 @@ public class HostHandler implements HostListener, PacketProcessor {
 			flood(context);
 			return;
 		}
+		//packetOut(context, dst.location().port());
+		
+		forwardPacketToDst(context, dst);
+		
+	}
+	private void forwardPacketToDst(PacketContext context, Host dst) {
+		  TrafficTreatment treatment = DefaultTrafficTreatment.builder().setOutput(dst.location().port()).build();
+		  OutboundPacket packet = new DefaultOutboundPacket(dst.location().deviceId(),
+		                                                             treatment, context.inPacket().unparsed());
+		  packetService.emit(packet);
+		  log.info("sending packet: {}", packet);
 	}
 
 
@@ -82,7 +97,6 @@ public class HostHandler implements HostListener, PacketProcessor {
 		if (ev.type() == HostEvent.Type.HOST_ADDED) {
 
 			for (Host host : hostService.getHosts()) {
-				SinglePointToMultiPointIntent broad = broadcastBuilder(host);
 
 				if (host.id().equals(ev.subject().id()))
 					continue;
@@ -92,36 +106,13 @@ public class HostHandler implements HostListener, PacketProcessor {
 				log.info(ev.subject().toString());
 				log.info("************************");
 
-				HostToHostIntent h = tunnelBuilder(host, ev.subject());
-
-				intentService.submit(h);
-				intentService.submit(broad);
+				HostToHostIntent h1 = tunnelBuilder(host, ev.subject());
+				HostToHostIntent h2 = tunnelBuilder(ev.subject(), host);
+				
+				intentService.submit(h1);
+				intentService.submit(h2);
 			}
-			SinglePointToMultiPointIntent broad = broadcastBuilder(ev.subject());
-			intentService.submit(broad);
 		}
-	}
-
-	private SinglePointToMultiPointIntent broadcastBuilder(Host src) {
-		TrafficTreatment treatment = DefaultTrafficTreatment.emptyTreatment();
-
-		TrafficSelector selector = DefaultTrafficSelector.builder().matchEthDst(MacAddress.BROADCAST).build();
-
-		String strKey = "broad-" + src.id();
-		Key key = Key.of(strKey, appId);
-
-		if (intentService.getIntent(key) != null)
-			intentService.purge(intentService.getIntent(key));
-
-		Set<ConnectPoint> dsts = new HashSet<>();
-		for (Host dst : hostService.getHosts()) {
-			if (dst.id().equals(src.id()))
-				continue;
-			dsts.add(dst.location());
-		}
-
-		return SinglePointToMultiPointIntent.builder().appId(appId).key(key).ingressPoint(src.location())
-				.egressPoints(dsts).selector(selector).treatment(treatment).build();
 	}
 
 	private HostToHostIntent tunnelBuilder(Host src, Host dst) {
@@ -137,5 +128,4 @@ public class HostHandler implements HostListener, PacketProcessor {
 		return HostToHostIntent.builder().appId(appId).key(key).one(srcId).two(dstId).selector(selector)
 				.treatment(treatment).build();
 	}
-
 }
