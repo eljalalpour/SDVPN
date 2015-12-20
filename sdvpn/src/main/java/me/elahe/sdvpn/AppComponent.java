@@ -53,7 +53,7 @@ public class AppComponent {
 	protected void activate() {
 		ApplicationId appId = applicationService.getId("me.elahe.sdvpn");
 		HostHandler handler = new HostHandler(intentService, appId, hostService, packetService);
-		hostService.addListener(handler);`
+		hostService.addListener(handler);
 		packetService.addProcessor(handler, PacketProcessor.director(2));
 		
 		TrafficSelector.Builder selector = DefaultTrafficSelector.builder();
