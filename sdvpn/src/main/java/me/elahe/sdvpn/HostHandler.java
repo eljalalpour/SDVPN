@@ -67,9 +67,9 @@ public class HostHandler implements HostListener, PacketProcessor {
 			return;
 		}
 		//packetOut(context, dst.location().port());
-		
-		forwardPacketToDst(context, dst);
-		
+		if (dst.vlan().toShort() == ethPkt.getVlanID()) {
+			forwardPacketToDst(context, dst);
+		}
 	}
 	private void forwardPacketToDst(PacketContext context, Host dst) {
 		  TrafficTreatment treatment = DefaultTrafficTreatment.builder().setOutput(dst.location().port()).build();
