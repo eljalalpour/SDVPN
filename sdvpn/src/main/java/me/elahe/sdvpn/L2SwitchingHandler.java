@@ -26,14 +26,14 @@ import org.onosproject.net.packet.PacketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HostHandler implements HostListener, PacketProcessor {
+public class L2SwitchingHandler implements HostListener, PacketProcessor {
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	private IntentService intentService;
 	private HostService hostService;
 	private ApplicationId appId;
 	private PacketService packetService;
 
-	public HostHandler(IntentService intentService, ApplicationId appId, HostService hostService, PacketService packetService) {
+	public L2SwitchingHandler(IntentService intentService, ApplicationId appId, HostService hostService, PacketService packetService) {
 		this.intentService = intentService;
 		this.appId = appId;
 		this.hostService = hostService;
