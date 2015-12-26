@@ -52,7 +52,7 @@ public class AppComponent {
 	@Activate
 	protected void activate() {
 		ApplicationId appId = applicationService.getId("me.elahe.sdvpn");
-		HostHandler handler = new HostHandler(intentService, appId, hostService, packetService);
+		L2SwitchingHandler handler = new L2SwitchingHandler(intentService, appId, hostService, packetService);
 		hostService.addListener(handler);
 		packetService.addProcessor(handler, PacketProcessor.director(2));
 		
