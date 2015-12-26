@@ -14,6 +14,7 @@ import org.onosproject.net.host.HostEvent;
 import org.onosproject.net.host.HostListener;
 import org.onosproject.net.host.HostService;
 import org.onosproject.net.intent.HostToHostIntent;
+import org.onosproject.net.intent.Intent;
 import org.onosproject.net.intent.IntentService;
 import org.onosproject.net.intent.Key;
 import org.onosproject.net.packet.DefaultOutboundPacket;
@@ -48,7 +49,7 @@ public class HostHandler implements HostListener, PacketProcessor {
 		}
 		InboundPacket pkt = context.inPacket();
 		Ethernet ethPkt = pkt.parsed();
-		
+
 		if (ethPkt == null) {
 			return;
 		}
@@ -57,7 +58,7 @@ public class HostHandler implements HostListener, PacketProcessor {
 			flood(context);
 			return;
 		}
-		
+
 		HostId dstId = HostId.hostId(ethPkt.getDestinationMAC());
 
 		// Do we know who this is for? If not, flood and bail.
@@ -66,17 +67,19 @@ public class HostHandler implements HostListener, PacketProcessor {
 			flood(context);
 			return;
 		}
+
 		//packetOut(context, dst.location().port());
 		if (dst.vlan().toShort() == ethPkt.getVlanID()) {
 			forwardPacketToDst(context, dst);
 		}
 	}
+
 	private void forwardPacketToDst(PacketContext context, Host dst) {
-		  TrafficTreatment treatment = DefaultTrafficTreatment.builder().setOutput(dst.location().port()).build();
-		  OutboundPacket packet = new DefaultOutboundPacket(dst.location().deviceId(),
-		                                                             treatment, context.inPacket().unparsed());
-		  packetService.emit(packet);
-		  log.info("sending packet: {}", packet);
+		TrafficTreatment treatment = DefaultTrafficTreatment.builder().setOutput(dst.location().port()).build();
+		OutboundPacket packet = new DefaultOutboundPacket(dst.location().deviceId(),
+			treatment, context.inPacket().unparsed());
+		packetService.emit(packet);
+		log.info("sending packet: {}", packet);
 	}
 
 
@@ -84,12 +87,12 @@ public class HostHandler implements HostListener, PacketProcessor {
 	private void flood(PacketContext context) {
 		packetOut(context, PortNumber.FLOOD);
 	}
-	
-    // Sends a packet out the specified port.
-    private void packetOut(PacketContext context, PortNumber portNumber) {
-        context.treatmentBuilder().setOutput(portNumber);
-        context.send();
-    }
+
+	// Sends a packet out the specified port.
+	private void packetOut(PacketContext context, PortNumber portNumber) {
+		context.treatmentBuilder().setOutput(portNumber);
+		context.send();
+	}
 
 
 	@Override
@@ -106,11 +109,9 @@ public class HostHandler implements HostListener, PacketProcessor {
 				log.info(ev.subject().toString());
 				log.info("************************");
 
-				HostToHostIntent h1 = tunnelBuilder(host, ev.subject());
-				HostToHostIntent h2 = tunnelBuilder(ev.subject(), host);
-				
-				intentService.submit(h1);
-				intentService.submit(h2);
+				HostToHostIntent h = tunnelBuilder(host, ev.subject());
+
+				intentService.submit(h);
 			}
 		}
 	}
@@ -126,6 +127,6 @@ public class HostHandler implements HostListener, PacketProcessor {
 
 		TrafficTreatment treatment = DefaultTrafficTreatment.emptyTreatment();
 		return HostToHostIntent.builder().appId(appId).key(key).one(srcId).two(dstId).selector(selector)
-				.treatment(treatment).build();
+			.treatment(treatment).priority(Intent.MAX_PRIORITY).build();
 	}
 }
