@@ -9,6 +9,7 @@ Usage (example uses IP = 192.168.1.2):
         sudo python mn.py --ip 192.168.1.2
 """
 from functools import partial
+from mininet.node import Host
 
 from mininet.net import Mininet
 from mininet.net import CLI
@@ -26,6 +27,33 @@ import argparse
 #            |
 # h3 --- s3 -+- s4 --- h6
 #
+
+class VLANHost(Host):
+    "Host connected to VLAN interface"
+
+    def config(self, vlan=100, **params):
+        """Configure VLANHost according to (optional) parameters:
+           vlan: VLAN ID for default interface"""
+
+        r = super(VLANHost, self).config(**params)
+
+        intf = self.defaultIntf()
+        # remove IP from default, "physical" interface
+        self.cmd('ifconfig %s inet 0' % intf)
+        # create VLAN interface
+        self.cmd('vconfig add %s %d' % (intf, vlan))
+        # assign the host's IP to the VLAN interface
+        self.cmd('ifconfig %s.%d inet %s' % (intf, vlan, params['ip']))
+        # update the intf name and host's intf map
+        newName = '%s.%d' % (intf, vlan)
+        # update the (Mininet) interface to refer to VLAN interface name
+        intf.name = newName
+        # add VLAN interface to host's name to intf map
+        self.nameToIntf[newName] = intf
+
+        return r
+
+
 class SampleTopology(Topo):
     """
     Subclass of mininet Topo class for
@@ -37,8 +65,10 @@ class SampleTopology(Topo):
         s3 = self.addSwitch(name='s3')
         s4 = self.addSwitch(name='s4')
         s5 = self.addSwitch(name='s5')
-        h1 = self.addHost(name='h1')
-        h2 = self.addHost(name='h2')
+        #h1 = self.addHost(name='h1')
+        #h2 = self.addHost(name='h2')
+        h1 = self.addHost(name='h1', cls=VLANHost, vlan=102)
+        h2 = self.addHost(name='h2', cls=VLANHost, vlan=102)
         h3 = self.addHost(name='h3')
         h4 = self.addHost(name='h4')
         h5 = self.addHost(name='h5')
@@ -57,7 +87,7 @@ class SampleTopology(Topo):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ip', dest='ip', help='Beehive Network Controller IP Address', default='172.16.79.1', type=str)
+    parser.add_argument('--ip', dest='ip', help='onos', default='172.16.79.1', type=str)
     cli_args = parser.parse_args()
 
     setLogLevel('info')

@@ -193,6 +193,21 @@ public class L2SwitchingMPLS implements HostListener {
 
 		}
 	}
+	
+	public void dropRule(Host h1,Host h2){
+		
+		TrafficSelector.Builder selectorBuilder = DefaultTrafficSelector.builder();
+		TrafficSelector selector = selectorBuilder.matchEthSrc(h2.mac()).build();
+		TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder();
+		TrafficTreatment treatment = treatmentBuilder.drop().build();
+		FlowRule.Builder flowBuilder = new DefaultFlowRule.Builder();
+		flowBuilder.forDevice(h1.location().deviceId()).withSelector(selector).withTreatment(treatment);
+		flowBuilder.fromApp(appId);
+		flowBuilder.makePermanent();
+		flowBuilder.withPriority(30);
+		FlowRule flowRule = flowBuilder.build();
+		flowRuleService.applyFlowRules(flowRule);	
+	}
 
 	/*
 	 * We use this function in order to simplify our MPLS tunnel creation :)

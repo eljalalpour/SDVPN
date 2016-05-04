@@ -14,7 +14,8 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.elahe.msdvpn</groupId>
@@ -27,7 +28,7 @@
 
     <properties>
         <onos.version>1.4.0-SNAPSHOT</onos.version>
-	<!-- Uncomment to generate ONOS app from this module. -->
+        <!-- Uncomment to generate ONOS app from this module. -->
         <onos.app.name>me.elahe.msdvpn</onos.app.name>
         <onos.app.origin>AUT Uni.</onos.app.origin>
     </properties>
@@ -65,6 +66,24 @@
             <artifactId>org.apache.felix.scr.annotations</artifactId>
             <version>1.9.8</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.onosproject</groupId>
+            <artifactId>onos-cli</artifactId>
+            <version>1.4.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>4.3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.karaf.shell</groupId>
+            <artifactId>org.apache.karaf.shell.console</artifactId>
+            <version>3.0.5</version>
         </dependency>
     </dependencies>
 
@@ -134,5 +153,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

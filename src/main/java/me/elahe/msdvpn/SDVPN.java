@@ -1,8 +1,11 @@
 package me.elahe.msdvpn;
 
+import java.util.Scanner;
+
 import org.apache.felix.scr.annotations.*;
 import org.onosproject.app.ApplicationService;
 import org.onosproject.core.ApplicationId;
+import org.onosproject.net.Host;
 import org.onosproject.net.device.DeviceService;
 import org.onosproject.net.flow.FlowRuleService;
 import org.onosproject.net.group.GroupService;
@@ -45,6 +48,8 @@ public class SDVPN {
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
 	protected IntentService intentService;
+	
+	L2SwitchingMPLS l2SwitchingMPLS;
 
 	@Activate
 	protected void activate() {
@@ -60,6 +65,28 @@ public class SDVPN {
 		log.info("Started");
 	}
 
+	public void dropRule(){
+		Scanner sc;
+		sc = new Scanner(System.in);
+		System.out.println("print the name of two hosts");
+		
+		Host host1= null,host2 = null;
+		String h1 = sc.nextLine();
+		String h2 = sc.nextLine();
+		
+		for(Host host : hostService.getHosts()){
+			if (host.toString().equals(h1)){
+				host1 = host;
+				
+			}else if(host.toString().equals(h2)){
+				host2 = host;
+			}
+		}
+		l2SwitchingMPLS.dropRule(host1, host2);
+		
+		System.out.println("The path between" + h1 + "and" + h2 + "has been blocked");
+		
+	}
 	@Deactivate
 	protected void deactivate() {
 		log.info("Stopped");
