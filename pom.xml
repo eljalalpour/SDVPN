@@ -20,16 +20,15 @@
 
     <groupId>me.elahe.msdvpn</groupId>
     <artifactId>msdvpn</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.4.5-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
-    <description>ONOS OSGi bundle archetype</description>
+    <description>SDN based VPLS implementation</description>
     <url>http://onosproject.org</url>
 
     <properties>
-        <onos.version>1.4.0-SNAPSHOT</onos.version>
-        <!-- Uncomment to generate ONOS app from this module. -->
-        <onos.app.name>me.elahe.msdvpn</onos.app.name>
+        <onos.version>1.6.0-SNAPSHOT</onos.version>
+        <onos.app.name>SDVPN</onos.app.name>
         <onos.app.origin>AUT Uni.</onos.app.origin>
     </properties>
 
@@ -42,23 +41,20 @@
 
         <dependency>
             <groupId>org.onosproject</groupId>
+            <artifactId>onos-cli</artifactId>
+            <version>${onos.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.onosproject</groupId>
             <artifactId>onlab-osgi</artifactId>
             <version>${onos.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.onosproject</groupId>
-            <artifactId>onos-api</artifactId>
-            <version>${onos.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
+            <groupId>org.apache.karaf.shell</groupId>
+            <artifactId>org.apache.karaf.shell.console</artifactId>
+            <version>3.0.5</version>
         </dependency>
 
         <dependency>
@@ -68,23 +64,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.onosproject</groupId>
-            <artifactId>onos-cli</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>4.3.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.karaf.shell</groupId>
-            <artifactId>org.apache.karaf.shell.console</artifactId>
-            <version>3.0.5</version>
-        </dependency>
     </dependencies>
 
     <build>
