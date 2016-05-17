@@ -8,62 +8,61 @@ Usage (example uses IP = 192.168.1.2):
     From the command line:
         sudo python mn.py --ip 192.168.1.2
 """
-from functools import partial
-
 from mininet.net import Mininet
 from mininet.net import CLI
 from mininet.log import setLogLevel
 from mininet.node import RemoteController
 from mininet.node import OVSSwitch
 from mininet.topo import Topo
-import argparse
 
-#
-# We want to build following topology:
-# h1 --- s1 -+- s2 --- h4
-# h2 --- |   |   | --- h5
-#            s5
-#            |
-# h3 --- s3 -+- s4 --- h6
-#
+import argparse
+from functools import partial
+
+import vlan
+
 class SampleTopology(Topo):
     """
     Subclass of mininet Topo class for
-    creating path topology.
+    creating following topology:
+    h1 --- s1 -+- s2 --- h4
+    h2 --- |   |   | --- h5
+               s5
+               |
+    h3 --- s3 -+- s4 --- h6
     """
     def build(self, *args, **params):
-        s1 = self.addSwitch(name='s1')
-        s2 = self.addSwitch(name='s2')
-        s3 = self.addSwitch(name='s3')
-        s4 = self.addSwitch(name='s4')
-        s5 = self.addSwitch(name='s5')
-        h1 = self.addHost(name='h1')
-        h2 = self.addHost(name='h2')
-        h3 = self.addHost(name='h3')
-        h4 = self.addHost(name='h4')
-        h5 = self.addHost(name='h5')
-        h6 = self.addHost(name='h6')
-        self.addLink(h1, s1)
-        self.addLink(h2, s1)
-        self.addLink(h4, s2)
-        self.addLink(h5, s2)
-        self.addLink(h3, s3)
-        self.addLink(h6, s4)
-        self.addLink(s1, s5)
-        self.addLink(s2, s5)
-        self.addLink(s3, s5)
-        self.addLink(s4, s5)
+        switch1 = self.addSwitch(name='s1')
+        switch2 = self.addSwitch(name='s2')
+        switch3 = self.addSwitch(name='s3')
+        switch4 = self.addSwitch(name='s4')
+        switch5 = self.addSwitch(name='s5')
+        host1 = self.addHost(name='h1', cls=vlan.VLANHost, vlan=101)
+        host2 = self.addHost(name='h2', cls=vlan.VLANHost, vlan=101)
+        host3 = self.addHost(name='h3', cls=vlan.VLANHost, vlan=103)
+        host4 = self.addHost(name='h4', cls=vlan.VLANHost, vlan=102)
+        host5 = self.addHost(name='h5', cls=vlan.VLANHost, vlan=102)
+        host6 = self.addHost(name='h6', cls=vlan.VLANHost, vlan=103)
+        self.addLink(host1, switch1)
+        self.addLink(host2, switch1)
+        self.addLink(host4, switch2)
+        self.addLink(host5, switch2)
+        self.addLink(host3, switch3)
+        self.addLink(host6, switch4)
+        self.addLink(switch1, switch5)
+        self.addLink(switch2, switch5)
+        self.addLink(switch3, switch5)
+        self.addLink(switch4, switch5)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--ip', dest='ip', help='Beehive Network Controller IP Address', default='172.16.79.1', type=str)
-    cli_args = parser.parse_args()
+    PARSER = argparse.ArgumentParser()
+    PARSER.add_argument('--ip', dest='ip', help='ONOS Network Controller IP Address', default='127.0.0.1', type=str)
+    CLI_ARGS = PARSER.parse_args()
 
     setLogLevel('info')
 
-    switch = partial(OVSSwitch, protocols='OpenFlow13')
-    net = Mininet(topo=SampleTopology(), controller=RemoteController('ONOS', ip=cli_args.ip, port=6633), switch=switch)
-    net.start()
-    CLI(net)
-    net.stop()
+    SWITCH = partial(OVSSwitch, protocols='OpenFlow13')
+    NET = Mininet(topo=SampleTopology(), controller=RemoteController('ONOS', ip=CLI_ARGS.ip, port=6633), switch=SWITCH)
+    NET.start()
+    CLI(NET)
+    NET.stop()
