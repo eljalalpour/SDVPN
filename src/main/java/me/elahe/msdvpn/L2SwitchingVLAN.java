@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public class L2SwitchingMPLS implements HostListener {
+public class L2SwitchingVLAN implements HostListener {
 
 	private ApplicationId appId;
 
@@ -32,7 +32,7 @@ public class L2SwitchingMPLS implements HostListener {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	public L2SwitchingMPLS(ApplicationId appId, FlowRuleService flowRuleService, GroupService groupService,
+	public L2SwitchingVLAN(ApplicationId appId, FlowRuleService flowRuleService, GroupService groupService,
 	                       DeviceService deviceService, TopologyService topologyService) {
 		this.appId = appId;
 
@@ -50,7 +50,7 @@ public class L2SwitchingMPLS implements HostListener {
 			DeviceId deviceId = host.location().deviceId();
 			GroupId gid = new DefaultGroupId(host.vlan().toShort() + 1373);
 			GroupKey gkey = new DefaultGroupKey(host.vlan().toString().getBytes());
-			MplsLabel mplsLabel = MplsLabel.mplsLabel(host.vlan().toShort() + 1373);
+			VlanId vlanId = VlanId.vlanId((short) (host.vlan().toShort() + 1373));
 
 
 			/* When we see new VLan */
@@ -71,8 +71,7 @@ public class L2SwitchingMPLS implements HostListener {
 
 					/* Build traffic selector */
 					TrafficSelector.Builder selectorBuilder = DefaultTrafficSelector.builder();
-					selectorBuilder.matchEthType((short) 0x8847);
-					TrafficSelector selector = selectorBuilder.matchMplsLabel(mplsLabel).build();
+					TrafficSelector selector = selectorBuilder.matchVlanId(vlanId).build();
 
 					/* Build traffic treatment */
 					TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder();
@@ -98,8 +97,7 @@ public class L2SwitchingMPLS implements HostListener {
 
 					/* Build traffic selector */
 					selectorBuilder = DefaultTrafficSelector.builder();
-					selectorBuilder.matchEthType((short) 0x8847);
-					selector = selectorBuilder.matchMplsLabel(mplsLabel).build();
+					selector = selectorBuilder.matchVlanId(vlanId).build();
 
 					/* Build traffic treatment */
 					treatmentBuilder = DefaultTrafficTreatment.builder();
@@ -153,12 +151,10 @@ public class L2SwitchingMPLS implements HostListener {
 
 
 			}
-			/* Rules for removing the MPLS tag at sink Switch */
+			/* Rules for swapping the VLAN tag at sink Switch */
 
 			TrafficTreatment.Builder treatmentBuilder = DefaultTrafficTreatment.builder();
 			treatmentBuilder.setOutput(host.location().port());
-			treatmentBuilder.popMpls(EtherType.IPV4.ethType());
-			treatmentBuilder.pushVlan();
 			treatmentBuilder.setVlanId(host.vlan());
 			TrafficTreatment treatment = treatmentBuilder.build();
 			GroupBucket bucket = DefaultGroupBucket.createAllGroupBucket(treatment);
@@ -168,17 +164,16 @@ public class L2SwitchingMPLS implements HostListener {
 
 			groupService.addBucketsToGroup(host.location().deviceId(), gkey, buckets, gkey, appId);
 
-			/* Rules for applying the MPLS tag at source switch */
+			/* Rules for applying the new VLAN tag at source switch */
 
 			/* Build traffic selector */
 			TrafficSelector.Builder selectorBuilder = DefaultTrafficSelector.builder();
-			TrafficSelector selector = selectorBuilder.matchInPort(host.location().port()).matchVlanId(VlanId.ANY).build();
+			TrafficSelector selector = selectorBuilder.matchInPort(host.location().port()).build();
 
 			/* Build traffic treatment */
 			treatmentBuilder = DefaultTrafficTreatment.builder();
-			treatmentBuilder.popVlan();
-			treatmentBuilder.pushMpls();
-			treatmentBuilder.setMpls(mplsLabel);
+			treatmentBuilder.pushVlan();
+			treatmentBuilder.setVlanId(vlanId);
 			treatmentBuilder.transition(1);
 			treatment = treatmentBuilder.build();
 

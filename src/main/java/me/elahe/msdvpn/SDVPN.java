@@ -1,11 +1,8 @@
 package me.elahe.msdvpn;
 
-import java.util.Scanner;
-
 import org.apache.felix.scr.annotations.*;
 import org.onosproject.app.ApplicationService;
 import org.onosproject.core.ApplicationId;
-import org.onosproject.net.Host;
 import org.onosproject.net.device.DeviceService;
 import org.onosproject.net.flow.FlowRuleService;
 import org.onosproject.net.group.GroupService;
@@ -26,38 +23,39 @@ public class SDVPN {
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
-	protected ApplicationService applicationService;
+	private ApplicationService applicationService;
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
 	private HostService hostService;
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
-	protected FlowRuleService flowRuleService;
+	private FlowRuleService flowRuleService;
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
-	protected GroupService groupService;
+	private GroupService groupService;
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
-	protected PacketService packetService;
+	private PacketService packetService;
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
-	protected DeviceService deviceService;
+	private DeviceService deviceService;
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
-	protected TopologyService topologyService;
+	private TopologyService topologyService;
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
-	protected IntentService intentService;
-	
-	L2SwitchingMPLS l2SwitchingMPLS;
+	private IntentService intentService;
 
 	@Activate
 	protected void activate() {
 		ApplicationId appId = applicationService.getId("me.elahe.msdvpn");
+		L2SwitchingVLAN l2SwitchingVLAN = new L2SwitchingVLAN(appId, flowRuleService, groupService, deviceService,
+			topologyService);
 		L2SwitchingMPLS l2SwitchingMPLS = new L2SwitchingMPLS(appId, flowRuleService, groupService, deviceService,
-				topologyService);
+			topologyService);
 		L2SwitchingIntent l2SwitchingIntent = new L2SwitchingIntent(appId, intentService);
 		ARPHandler arpHandler = new ARPHandler();
+		//hostService.addListener(l2SwitchingVLAN);
 		hostService.addListener(l2SwitchingMPLS);
 		//hostService.addListener(l2SwitchingIntent);
 		packetService.addProcessor(arpHandler, PacketProcessor.director(2));
@@ -65,28 +63,6 @@ public class SDVPN {
 		log.info("Started");
 	}
 
-	public void dropRule(){
-		Scanner sc;
-		sc = new Scanner(System.in);
-		System.out.println("print the name of two hosts");
-		
-		Host host1= null,host2 = null;
-		String h1 = sc.nextLine();
-		String h2 = sc.nextLine();
-		
-		for(Host host : hostService.getHosts()){
-			if (host.toString().equals(h1)){
-				host1 = host;
-				
-			}else if(host.toString().equals(h2)){
-				host2 = host;
-			}
-		}
-		l2SwitchingMPLS.dropRule(host1, host2);
-		
-		System.out.println("The path between" + h1 + "and" + h2 + "has been blocked");
-		
-	}
 	@Deactivate
 	protected void deactivate() {
 		log.info("Stopped");

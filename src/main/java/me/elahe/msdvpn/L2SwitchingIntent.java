@@ -32,6 +32,7 @@ public class L2SwitchingIntent implements HostListener {
 		this.vLanIdMap = new HashMap<>();
 	}
 
+
 	public void event(HostEvent event) {
 		if (event.type() == HostEvent.Type.HOST_ADDED) {
 			Host host = event.subject();
@@ -44,8 +45,8 @@ public class L2SwitchingIntent implements HostListener {
 			/* And we do this for all our new hosts :) */
 
 			/*
-			 * Create path between our new host and all old hosts that has the
-			 * same VLanID
+			 * Create path between our new host and all old hosts
+			 * that has the same VLanID
 			 */
 			for (Host h : vLanIdMap.get(host.vlan())) {
 				intentService.submit(tunnelBuilder(host, h));
@@ -68,7 +69,7 @@ public class L2SwitchingIntent implements HostListener {
 		TrafficTreatment treatment = DefaultTrafficTreatment.emptyTreatment();
 
 		return HostToHostIntent.builder().appId(appId).key(key).one(srcId).two(dstId).selector(selector)
-				.treatment(treatment).priority(Intent.MAX_PRIORITY).build();
+			.treatment(treatment).priority(Intent.MAX_PRIORITY).build();
 	}
 
 }
