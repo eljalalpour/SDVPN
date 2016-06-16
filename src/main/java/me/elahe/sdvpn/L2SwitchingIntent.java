@@ -1,4 +1,4 @@
-package me.elahe.msdvpn;
+package me.elahe.sdvpn;
 
 import org.onlab.packet.VlanId;
 import org.onosproject.core.ApplicationId;

@@ -1,0 +1,52 @@
+/* css for SDVPN custom view */
+
+#ov-sdvpn {
+    padding: 20px;
+}
+
+.light #ov-sdvpn {
+    color: navy;
+}
+
+.dark #ov-sdvpn {
+    color: #88f;
+}
+
+#ov-sdvpn .button-panel {
+    margin: 10px;
+    width: 200px;
+}
+
+.light #ov-sdvpn .button-panel {
+    background-color: #ccf;
+}
+
+.dark #ov-sdvpn .button-panel {
+    background-color: #444;
+}
+
+#ov-sdvpn .my-button {
+    cursor: pointer;
+    padding: 4px;
+    text-align: center;
+}
+
+.light #ov-sdvpn .my-button {
+    color: white;
+    background-color: #99d;
+}
+
+.dark #ov-sdvpn .my-button {
+    color: black;
+    background-color: #aaa;
+}
+
+#ov-sdvpn .number {
+    font-size: 140%;
+    text-align: right;
+}
+
+#ov-sdvpn .quote {
+    margin: 10px 20px;
+    font-style: italic;
+}

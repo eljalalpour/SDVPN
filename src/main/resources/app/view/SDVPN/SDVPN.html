@@ -1,0 +1,31 @@
+<!-- partial HTML -->
+<div id="ov-sdvpn">
+    <div class="button-panel">
+        <div class="my-button" ng-click="dropRule()">
+            Add Drop Rule
+        </div>
+    </div>
+
+    <datalist id="host-list">
+        <option ng-repeat="host in hosts"
+                value="{{host.mac}}">{{host.ip}}@{{host.vlan}}
+        </option>
+    </datalist>
+
+    <div class="data-panel">
+        <form>
+            <div class="row">
+                <label for="src-host">
+                    Source Host:
+                </label>
+                <input ng-model="srcHost" name="src-host" id="src-host" type="text" list="host-list">
+            </div>
+            <div class="row">
+                <label for="dst-host" class="col-md-4">
+                    Destination Host:
+                </label>
+                <input ng-model="dstHost" name="dst-host" id="dst-host" type="text" list="host-list">
+            </div>
+        </form>
+    </div>
+</div>

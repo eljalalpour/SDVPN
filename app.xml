@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<app name="me.elahe.sdvpn"
+     origin="Amirkabir University of Technology"
+     version="${project.version}"
+     category="Tunneling"
+     url="http://elahe.me"
+     title="SDVPN"
+     featuresRepo="mvn:${project.groupId}/${project.artifactId}/${project.version}/xml/features"
+     features="${project.artifactId}">
+    <description>${project.description}</description>
+    <artifact>mvn:${project.groupId}/${project.artifactId}/${project.version}</artifact>
+</app>

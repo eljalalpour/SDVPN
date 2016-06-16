@@ -18,9 +18,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>me.elahe.msdvpn</groupId>
-    <artifactId>msdvpn</artifactId>
-    <version>1.4.5-SNAPSHOT</version>
+    <groupId>me.elahe.sdvpn</groupId>
+    <artifactId>sdvpn</artifactId>
+    <version>1.5.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <description>SDN based VPLS implementation</description>
@@ -28,8 +28,6 @@
 
     <properties>
         <onos.version>1.6.0-SNAPSHOT</onos.version>
-        <onos.app.name>SDVPN</onos.app.name>
-        <onos.app.origin>AUT Uni.</onos.app.origin>
     </properties>
 
     <dependencies>
@@ -62,6 +60,21 @@
             <artifactId>org.apache.felix.scr.annotations</artifactId>
             <version>1.9.8</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.onosproject</groupId>
+            <artifactId>onos-api</artifactId>
+            <version>${onos.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
