@@ -62,10 +62,10 @@
                 $scope.$on('$destroy', function () {
                     wss.unbindHandlers(handlers);
                     ks.unbindKeys();
-                    $log.log('OvShakhSDVPNCtrl has been destroyed');
+                    $log.log('OvSDVPNCtrl has been destroyed');
                 });
 
-                $log.log('OvShakhSDVPNCtrl has been created');
+                $log.log('OvSDVPNCtrl has been created');
             }]);
 
 }());
