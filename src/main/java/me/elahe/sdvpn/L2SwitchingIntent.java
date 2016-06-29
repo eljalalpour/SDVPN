@@ -18,6 +18,9 @@ import org.onosproject.net.intent.Key;
 import java.util.HashMap;
 import java.util.*;
 
+/**
+ * building host to host intent between hosts with the same Vlan
+ */
 public class L2SwitchingIntent implements HostListener {
 	private IntentService intentService;
 	private ApplicationId appId;
@@ -33,6 +36,10 @@ public class L2SwitchingIntent implements HostListener {
 	}
 
 
+	/**
+	 *
+	 * @param event HostEvent that we use to detect adding new hosts to the network
+     */
 	public void event(HostEvent event) {
 		if (event.type() == HostEvent.Type.HOST_ADDED) {
 			Host host = event.subject();
@@ -57,6 +64,12 @@ public class L2SwitchingIntent implements HostListener {
 		}
 	}
 
+	/**
+	 *
+	 * @param src the source host for the host to host intent
+	 * @param dst the destination host for the host to host intent
+     * @return
+     */
 	private HostToHostIntent tunnelBuilder(Host src, Host dst) {
 		HostId srcId = src.id();
 		HostId dstId = dst.id();

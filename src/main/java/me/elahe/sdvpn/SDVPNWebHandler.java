@@ -14,6 +14,9 @@ import org.onosproject.ui.UiMessageHandler;
 
 import java.util.Collection;
 
+/**
+ * message handler for the requests from the applications web ui
+ */
 public class SDVPNWebHandler extends UiMessageHandler implements HostListener {
 	private FlowRuleService flowRuleService;
 	private HostService hostService;
@@ -32,6 +35,10 @@ public class SDVPNWebHandler extends UiMessageHandler implements HostListener {
 		);
 	}
 
+	/**
+	 *
+	 * @param hostEvent Host event that we use to detect adding new hosts to the network
+     */
 	@Override
 	public void event(HostEvent hostEvent) {
 		if (hostEvent.type() == HostEvent.Type.HOST_ADDED) {
@@ -45,12 +52,21 @@ public class SDVPNWebHandler extends UiMessageHandler implements HostListener {
 	}
 
 	// handler for drop request
+
+	/**
+	 *
+	 */
 	private final class DropRuleRequestHandler extends RequestHandler {
 
 		private DropRuleRequestHandler() {
 			super("dropRule");
 		}
 
+		/**
+		 *
+		 * @param sid
+		 * @param payload
+         */
 		@Override
 		public void process(long sid, ObjectNode payload) {
 			String h1 = payload.get("h1").asText();

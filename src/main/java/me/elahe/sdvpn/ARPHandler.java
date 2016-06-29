@@ -7,6 +7,9 @@ import org.onosproject.net.packet.InboundPacket;
 import org.onosproject.net.packet.PacketContext;
 import org.onosproject.net.packet.PacketProcessor;
 
+/**
+ * flooding arp packets from all the ports
+ */
 public class ARPHandler implements PacketProcessor {
 
 	public ARPHandler() {

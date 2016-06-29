@@ -63,6 +63,9 @@ public class SDVPN {
 	private UiExtensionService uiExtensionService;
 
 
+	/**
+	 *
+	 */
 	@Activate
 	protected void activate() {
 		ApplicationId appId = applicationService.getId("me.elahe.sdvpn");
